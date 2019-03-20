@@ -1,4 +1,5 @@
 use std::env;
+use std::error::Error;
 use std::fs;
 use std::io::{BufRead, BufReader};
 use std::process;
@@ -93,7 +94,7 @@ fn update_accelerations(particles: &mut Vec<Particle>) {
     }
 }
 
-struct Config {
+pub struct Config {
     filename: String,
 }
 
@@ -117,13 +118,20 @@ fn main() {
         process::exit(1);
     });
 
+    if let Err(e) = run(config) {
+        println!("Runtime error: {}", e);
+
+        process::exit(1);
+    }
+}
+
+fn run(config: Config) -> Result<(), Box<dyn Error>> {
     // TODO: Panics if you don't give command line input
     let input_path = config.filename;
     println!("Reading n-body input file from {}", input_path);
 
     // Read the input file into a vector of structs
-    let f = fs::File::open(input_path)
-                 .expect("Failed to open file");
+    let f = fs::File::open(input_path)?;
     let buf = BufReader::new(f);
     let mut particles: Vec<Particle> = Vec::new();
     for line in buf.lines() {
@@ -181,4 +189,6 @@ fn main() {
         t += dt;
         steps += 1;
     }
+
+    Ok(())
 }
