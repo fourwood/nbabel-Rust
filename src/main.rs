@@ -31,8 +31,8 @@ impl Particle {
 
     fn update_velocity(&mut self, dt: f64) -> () {
         self.vel[0] += 0.5 * (self.acc[0] + self.acc0[0]) * dt;
-        self.vel[1] += 1.5 * (self.acc[1] + self.acc0[1]) * dt;
-        self.vel[2] += 2.5 * (self.acc[2] + self.acc0[2]) * dt;
+        self.vel[1] += 0.5 * (self.acc[1] + self.acc0[1]) * dt;
+        self.vel[2] += 0.5 * (self.acc[2] + self.acc0[2]) * dt;
     }
 
     fn calculate_ke(&self) -> f64 {
@@ -75,6 +75,7 @@ fn update_accelerations(particles: &mut Vec<Particle>) {
     for i in 0..particles.len() {
         particles[i].acc0 = particles[i].acc;
         particles[i].acc = [0f64, 0f64, 0f64];
+
         for j in 0..particles.len() {
             if i == j { continue; }
 
@@ -85,15 +86,13 @@ fn update_accelerations(particles: &mut Vec<Particle>) {
             let dr_cubed = (dr[0]*dr[0] + dr[1]*dr[1] + dr[2]*dr[2]).powf(1.5);
 
             particles[i].acc[0] += particles[j].mass * dr[0] / dr_cubed;
-            particles[i].acc[1] += particles[j].mass * dr[0] / dr_cubed;
-            particles[i].acc[2] += particles[j].mass * dr[0] / dr_cubed;
+            particles[i].acc[1] += particles[j].mass * dr[1] / dr_cubed;
+            particles[i].acc[2] += particles[j].mass * dr[2] / dr_cubed;
         }
     }
 }
 
 fn main() {
-    println!("Hello, world!");
-
     let args: Vec<String> = env::args().collect();
 
     // TODO: Panics if you don't give command line input
@@ -127,12 +126,14 @@ fn main() {
     let t0 = 0.0;
     let mut t = t0;
     let dt = 0.001;
-    let t_max = 0.1; // 1.0;
+    let t_max = 1.0;
     let mut steps = 1;
 
-    let mut ke = calculate_ke(&particles);
-    let mut pe = calculate_pe(&particles);
-    println!("Total E: {}; KE: {}; PE: {}", ke+pe, ke, pe);
+    let ke0 = calculate_ke(&particles);
+    let pe0 = calculate_pe(&particles);
+    let e0 = ke0 + pe0;
+    println!("Timestep {}:", steps);
+    println!("E: {:.5}\tKE: {:.5}\tPE: {:.5}", e0, ke0, pe0);
 
     update_accelerations(&mut particles);
 
@@ -148,9 +149,11 @@ fn main() {
         }
 
         if steps % 10 == 0 {
-            ke = calculate_ke(&particles);
-            pe = calculate_pe(&particles);
-            println!("Total E: {}; KE: {}; PE: {}", ke+pe, ke, pe);
+            let ke = calculate_ke(&particles);
+            let pe = calculate_pe(&particles);
+            let e = ke+pe;
+            println!("Timestep {}:", steps);
+            println!("E: {:.5}\tKE: {:.5}\tPE: {:.5}\tdE: {:+.5e}", e, ke, pe, (e-e0)/e0);
         }
 
         t += dt;
