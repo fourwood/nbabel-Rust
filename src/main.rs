@@ -1,6 +1,7 @@
 use std::env;
 use std::fs;
 use std::io::{BufRead, BufReader};
+use std::process;
 
 #[derive(Debug)]
 struct Particle {
@@ -92,11 +93,32 @@ fn update_accelerations(particles: &mut Vec<Particle>) {
     }
 }
 
+struct Config {
+    filename: String,
+}
+
+impl Config {
+    fn new(args: &[String]) -> Result<Config, &'static str> {
+        if args.len() < 2 {
+            return Err("no input file specified");
+        }
+
+        let filename = args[1].clone();
+
+        Ok(Config { filename })
+    }
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
 
+    let config = Config::new(&args).unwrap_or_else(|err| {
+        println!("Problem parsing arguments: {}", err);
+        process::exit(1);
+    });
+
     // TODO: Panics if you don't give command line input
-    let input_path = &args[1];
+    let input_path = config.filename;
     println!("Reading n-body input file from {}", input_path);
 
     // Read the input file into a vector of structs
