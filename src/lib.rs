@@ -1,6 +1,7 @@
 use std::error::Error;
 use std::fs;
 use std::io::{BufRead, BufReader};
+use std::thread;
 
 mod particle;
 use particle::Particle;
