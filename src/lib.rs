@@ -112,6 +112,17 @@ mod tests {
     use super::*;
 
     #[test]
+    fn make_particle() {
+        let mass = 1.0;
+        let pos = [2.0, 3.0, 4.0];
+        let vel = [0.1, 0.2, 0.3];
+        let p = Particle::new(mass, pos, vel);
+        assert_eq!(p.mass, mass);
+        assert_eq!(p.pos, pos);
+        assert_eq!(p.vel, vel);
+    }
+
+    #[test]
     fn read_input() {
         // The entirety of the input16 file, with unused id set to a float:
         let input16 = [
@@ -146,5 +157,42 @@ mod tests {
             assert_eq!(p.acc, [0.0, 0.0, 0.0]);
             assert_eq!(p.acc0, [0.0, 0.0, 0.0]);
         }
+    }
+
+    #[test]
+    fn move_particle() {
+        let mass = 1.0;
+        let pos = [0.0, 0.0, 0.0];
+        let vel = [1.0, 10.0, 100.0];
+        let mut p = Particle::new(mass, pos, vel);
+        p.acc = [10.0, 20.0, 30.0];
+
+        let dt = 0.1;
+        p.update_position(dt);
+
+        let dx = p.pos[0] - 0.15;
+        let dy = p.pos[1] - 1.1;
+        let dz = p.pos[2] - 10.15;
+
+        let is_small_dx: bool = (dx / p.pos[0]) < std::f64::EPSILON;
+        let is_small_dy: bool = (dy / p.pos[1]) < std::f64::EPSILON;
+        let is_small_dz: bool = (dz / p.pos[2]) < std::f64::EPSILON;
+
+        assert!(is_small_dx);
+        assert!(is_small_dy);
+        assert!(is_small_dz);
+    }
+
+    #[test]
+    fn calculate_ke() {
+        let mass = 1.0;
+        let pos = [0.0, 0.0, 0.0];
+        let vel = [1.0, 2.0, 3.0];
+        let p = Particle::new(mass, pos, vel);
+
+        let ke = p.calculate_ke();
+        let d_ke = ke - 18.0;
+        let is_small_delta: bool = (d_ke / ke) < std::f64::EPSILON;
+        assert!(is_small_delta);
     }
 }
