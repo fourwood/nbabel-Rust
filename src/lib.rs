@@ -54,12 +54,13 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn new(args: &[String]) -> Result<Config, &'static str> {
-        if args.len() < 2 {
-            return Err("no input file specified");
-        }
+    pub fn new(mut args: std::env::Args) -> Result<Config, &'static str> {
+        args.next();  // Skip over the executable name
 
-        let filename = args[1].clone();
+        let filename = match args.next() {
+            Some(arg) => arg,
+            None => return Err("no input file specified!"),
+        };
 
         Ok(Config { filename })
     }
